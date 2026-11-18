@@ -1,0 +1,4 @@
+# 정답 기준(인수 테스트)과 자동화 규칙은 소유자 승인 없이 바뀔 수 없다.
+/backend/src/test/java/**/acceptance/  @ksoheee
+/.github/                               @ksoheee
+/CLAUDE.md                              @ksoheee

@@ -1,0 +1,19 @@
+# build
+backend/build/
+backend/.gradle/
+frontend/node_modules/
+frontend/.next/
+frontend/openapi/
+
+# 자동 수정 작업 파일
+.autofix/
+
+# IDE / OS
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# secrets
+.env
+*.env

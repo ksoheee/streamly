@@ -1,0 +1,27 @@
+name: 기능
+description: 사람이 판단하는 지점 1 — 무엇을 만들지와 정답 기준을 정한다
+title: "[기능] "
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: 목표
+      description: 누가 무엇을 할 수 있게 되는가
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 인수 조건 (Given / When / Then)
+      description: 이 조건이 acceptance/ 테스트가 된다. 테스트는 사람이 검토하고 직접 커밋한다.
+      placeholder: |
+        Given 방송 중인 채널이 있을 때
+        When 시청자가 채팅을 보내면
+        Then 같은 방의 다른 시청자가 1초 안에 메시지를 받는다
+    validations:
+      required: true
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: 범위 밖
+      description: 이번에 하지 않을 것 (범위가 커지는 것을 막는다)

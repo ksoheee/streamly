@@ -1,0 +1,131 @@
+# 루프 1의 "감지 신호". PR마다 빌드·테스트·포맷·타입·보호 규칙을 검사한다.
+# 실패하면 autofix.yml 이 이어서 실행된다.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: 포맷 검사 (Spotless)
+        run: ./gradlew spotlessCheck --no-daemon
+
+      - name: 테스트 (Testcontainers로 PostgreSQL·Redis·Kafka 포함)
+        run: ./gradlew test --no-daemon
+
+      - name: OpenAPI 스펙 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: openapi
+          path: backend/build/openapi.json
+          if-no-files-found: error
+
+      - name: 테스트 리포트 업로드 (실패 시)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: backend/build/reports/tests/test
+
+  frontend:
+    needs: backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 프론트엔드 존재 여부 확인
+        id: exists
+        run: |
+          if [ -f frontend/package.json ]; then echo "yes=true" >> "$GITHUB_OUTPUT"; else echo "yes=false" >> "$GITHUB_OUTPUT"; fi
+
+      - if: steps.exists.outputs.yes == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - if: steps.exists.outputs.yes == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: openapi
+          path: frontend/openapi
+
+      - name: 설치 · 타입 생성 · 타입 검사 · 빌드
+        if: steps.exists.outputs.yes == 'true'
+        working-directory: frontend
+        run: |
+          npm ci
+          # 백엔드 스펙에서 타입을 새로 생성한다. API가 바뀌었는데 프론트가 안 맞으면 여기서 깨진다.
+          npx --yes openapi-typescript openapi/openapi.json -o src/api/schema.d.ts
+          npx tsc --noEmit
+          npm run lint --if-present
+          npm run build
+
+  guard:
+    # 정답 기준(인수 테스트)과 자동화 규칙을 에이전트가 바꾸지 못하게 막는다.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 에이전트 커밋의 보호 경로 수정 검사
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          PROTECTED='^(backend/src/test/java/.*/acceptance/|\.github/|CLAUDE\.md$)'
+          bot_files=""
+          bot_disabled=0
+          for c in $(git rev-list "$BASE..$HEAD"); do
+            who=$(git log -1 --format='%an %ae %cn %ce' "$c")
+            echo "$who" | grep -qi 'claude' || continue
+            bot_files="$bot_files $(git diff-tree --no-commit-id --name-only -r "$c" | grep -E "$PROTECTED" || true)"
+            git show "$c" -- '*.java' | grep -qE '^\+.*@Disabled' && bot_disabled=1
+          done
+          # 에이전트가 나중에 스스로 되돌렸다면 통과시킨다. 최종 결과(BASE..HEAD)에 남아 있는지만 본다.
+          violations=0
+          for f in $(echo "$bot_files" | tr ' ' '\n' | sort -u); do
+            if ! git diff --quiet "$BASE" "$HEAD" -- "$f"; then
+              echo "::error::에이전트가 보호 경로를 수정했습니다: $f"
+              violations=1
+            fi
+          done
+          if [ "$bot_disabled" -eq 1 ] && git diff "$BASE" "$HEAD" -- '*.java' | grep -qE '^\+.*@Disabled'; then
+            echo "::error::에이전트가 @Disabled 로 테스트를 껐습니다."
+            violations=1
+          fi
+          if [ "$violations" -ne 0 ]; then
+            echo "보호 규칙 위반: 보호 경로 변경을 되돌리고 코드 쪽을 고쳐야 합니다."
+            exit 1
+          fi
+          echo "보호 규칙 위반 없음"
