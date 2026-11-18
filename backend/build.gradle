@@ -5,7 +5,7 @@ plugins {
     id 'com.diffplug.spotless' version '7.0.4'
 }
 
-group = 'com.chzzkclone'
+group = 'com.streamly'
 version = '0.0.1-SNAPSHOT'
 
 java {

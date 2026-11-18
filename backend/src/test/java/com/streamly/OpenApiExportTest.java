@@ -1,8 +1,8 @@
-package com.chzzkclone;
+package com.streamly;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.chzzkclone.support.IntegrationTest;
+import com.streamly.support.IntegrationTest;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;

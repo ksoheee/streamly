@@ -1,4 +1,4 @@
-package com.chzzkclone.support;
+package com.streamly.support;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
