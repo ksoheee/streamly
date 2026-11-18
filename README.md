@@ -1,4 +1,4 @@
-# chzzk-clone
+# streamly
 
 치지직 같은 라이브 스트리밍 서비스. 사람의 판단을 검증 가능한 신호로 바꾸고, 에이전트가 그 신호를 기준으로 스스로 고치는 개발 파이프라인 위에서 만든다.
 
@@ -38,8 +38,8 @@
 
 ```bash
 git checkout -b test/autofix
-# ChzzkCloneApplication.java 의 들여쓰기를 망가뜨린다
-sed -i 's/^  public static/      public static/' backend/src/main/java/com/chzzkclone/ChzzkCloneApplication.java
+# StreamlyApplication.java 의 들여쓰기를 망가뜨린다
+sed -i 's/^  public static/      public static/' backend/src/main/java/com/streamly/StreamlyApplication.java
 git commit -am "test: 자동 수정 루프 확인" && git push -u origin test/autofix
 gh pr create --fill
 ```

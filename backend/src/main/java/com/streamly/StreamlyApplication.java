@@ -1,12 +1,12 @@
-package com.chzzkclone;
+package com.streamly;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ChzzkCloneApplication {
+public class StreamlyApplication {
 
   public static void main(String[] args) {
-    SpringApplication.run(ChzzkCloneApplication.class, args);
+    SpringApplication.run(StreamlyApplication.class, args);
   }
 }
