@@ -1,4 +1,4 @@
-# 로컬 개발용 인프라. (운영 배포용은 5블록에서 따로 만든다)
+# 로컬 개발용 인프라. (운영 배포용은 STR-17에서 따로 만든다)
 services:
   postgres:
     image: postgres:16-alpine
@@ -9,21 +9,13 @@ services:
     ports: ["5432:5432"]
     volumes: [pgdata:/var/lib/postgresql/data]
 
-  redis:
-    image: redis:7-alpine
-    ports: ["6379:6379"]
-
-  kafka:
-    # KRaft 단일 노드. 기본 설정이 localhost:9092 로 광고한다.
-    image: apache/kafka:3.9.1
-    ports: ["9092:9092"]
-
   mediamtx:
-    # OBS → rtmp://localhost:1935/<스트림키>, 시청 → http://localhost:8888/<스트림키>/index.m3u8
+    # 브라우저 송출(WHIP) http://localhost:8889/<경로>/whip, 시청(WHEP) http://localhost:8889/<경로>/whep
     image: bluenviron/mediamtx:latest
     ports:
-      - "1935:1935"
-      - "8888:8888"
+      - "8889:8889"
+      - "8189:8189/udp"
+      - "8189:8189/tcp"
 
 volumes:
   pgdata:
