@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# OCI Ubuntu 24.04 (ARM) 서버를 처음 세팅하고 Streamly를 배포한다. 여러 번 실행해도 된다 (업데이트 배포에도 사용).
+# Ubuntu 24.04 서버(OCI, GCP, AWS 등)를 처음 세팅하고 Streamly를 배포한다. 여러 번 실행해도 된다 (업데이트 배포에도 사용).
 #
 # 서버에서:
 #   PUBLIC_IP=1.2.3.4 POSTGRES_PASSWORD=... DEMO_PASSWORD=... bash setup-server.sh
@@ -12,9 +12,9 @@ REPO=https://github.com/ksoheee/streamly.git
 DIR="$HOME/streamly"
 DOMAIN="${PUBLIC_IP//./-}.sslip.io"
 
-echo "== 1. 서버 내부 방화벽 열기 (OCI 이미지는 22번 외에 막혀 있다)"
+echo "== 1. 서버 내부 방화벽 열기 (OCI 이미지는 22번 외에 막혀 있다. 다른 클라우드는 영향 없음)"
 open_port() {
-  sudo iptables -C INPUT "$@" -j ACCEPT 2>/dev/null || sudo iptables -I INPUT 5 "$@" -j ACCEPT
+  sudo iptables -C INPUT "$@" -j ACCEPT 2>/dev/null || sudo iptables -I INPUT 1 "$@" -j ACCEPT
 }
 open_port -p tcp -m multiport --dports 80,443,8189
 open_port -p udp --dport 8189
