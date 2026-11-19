@@ -30,8 +30,10 @@ public class BroadcastController {
   }
 
   @GetMapping
-  public List<BroadcastResponse> list(@RequestParam(required = false) BroadcastStatus status) {
-    return service.list(status);
+  public List<BroadcastResponse> list(
+      @RequestParam(required = false) BroadcastStatus status,
+      @RequestParam(required = false) String q) {
+    return service.list(status, q);
   }
 
   @GetMapping("/{id}")
