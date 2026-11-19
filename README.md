@@ -70,6 +70,8 @@ Firefox, 맥 Safari의 PC 송출은 지원하지 않습니다. 화면 공유와 
 
 ## 구조
 
+각 부분을 어떻게 구현했고 어떤 선택지 중에서 왜 골랐는지는 [설계 문서(docs/architecture.md)](docs/architecture.md)에 정리했습니다.
+
 ```
 브라우저 ──HTTPS──▶ Caddy ─┬─ /api/*              → app (Spring Boot)  ── PostgreSQL
                            ├─ /<경로>/whip, /whep → MediaMTX (WebRTC)
