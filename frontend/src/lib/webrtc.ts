@@ -98,7 +98,7 @@ export async function closeSession(s: Session | null) {
 }
 
 // Chrome은 공유 화면이 멈춰 있으면 새 프레임을 보내지 않는다. 그러면 나중에 들어온 시청자는 키프레임을 못 받아
-// 소리만 나오고 영상이 검게 남는다. 화면이 멈춘 동안 마지막 프레임을 1초마다 다시 보낸다.
+// 소리만 나오고 영상이 검게 남는다. 화면이 멈춘 동안 마지막 프레임을 0.5초마다 다시 보낸다.
 // MediaStreamTrackProcessor/Generator 가 없는 브라우저(사파리 등)는 원래 트랙을 그대로 쓴다.
 type FrameReader = { read(): Promise<{ value?: VideoFrame; done: boolean }> };
 type FrameWriter = { write(f: VideoFrame): Promise<void> };
@@ -109,7 +109,7 @@ declare const MediaStreamTrackGenerator: new (o: { kind: "video" }) => MediaStre
   writable: { getWriter(): FrameWriter };
 };
 
-export function keepFramesFlowing(track: MediaStreamTrack, idleMs = 1000): MediaStreamTrack {
+export function keepFramesFlowing(track: MediaStreamTrack, idleMs = 500): MediaStreamTrack {
   if (!("MediaStreamTrackProcessor" in window) || !("MediaStreamTrackGenerator" in window)) return track;
   const reader = new MediaStreamTrackProcessor({ track }).readable.getReader();
   const gen = new MediaStreamTrackGenerator({ kind: "video" });
@@ -120,9 +120,17 @@ export function keepFramesFlowing(track: MediaStreamTrack, idleMs = 1000): Media
     lastAt = performance.now();
     writer.write(new VideoFrame(f, { timestamp: Math.round(lastAt * 1000) })).catch(() => {});
   };
-  const timer = setInterval(() => {
+  // 송출 탭이 뒤로 가면 탭의 setInterval 은 1초~1분에 한 번으로 느려진다. 워커 타이머는 느려지지 않아 워커가 박자를 준다.
+  const ticker = new Worker(
+    URL.createObjectURL(
+      new Blob([`setInterval(() => postMessage(0), ${Math.round(idleMs / 2)})`], {
+        type: "text/javascript",
+      }),
+    ),
+  );
+  ticker.onmessage = () => {
     if (last && performance.now() - lastAt >= idleMs) push(last);
-  }, idleMs / 2);
+  };
   void (async () => {
     for (;;) {
       const { value, done } = await reader.read();
@@ -131,7 +139,7 @@ export function keepFramesFlowing(track: MediaStreamTrack, idleMs = 1000): Media
       last = value;
       push(value);
     }
-    clearInterval(timer);
+    ticker.terminate();
     last?.close();
     gen.stop();
   })();
