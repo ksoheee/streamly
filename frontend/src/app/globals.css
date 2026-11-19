@@ -694,6 +694,15 @@ textarea:focus {
   margin-top: 8px;
 }
 
+/* 다시보기 */
+.narrow-wide {
+  max-width: 960px;
+}
+
+.recordings-row {
+  margin: 12px 0;
+}
+
 /* 확인창 */
 .confirm {
   width: min(320px, calc(100vw - 32px));

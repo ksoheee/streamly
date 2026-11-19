@@ -18,3 +18,11 @@ export function elapsed(startedAt: string | undefined, now: number): string {
   const p = (n: number) => String(n).padStart(2, "0");
   return `${p(Math.floor(s / 3600))}:${p(Math.floor((s % 3600) / 60))}:${p(s % 60)}`;
 }
+
+export function duration(seconds: number | undefined): string {
+  const s = Math.round(seconds ?? 0);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return s >= 3600
+    ? `${Math.floor(s / 3600)}:${p(Math.floor((s % 3600) / 60))}:${p(s % 60)}`
+    : `${Math.floor(s / 60)}:${p(s % 60)}`;
+}
