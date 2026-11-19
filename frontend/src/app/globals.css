@@ -744,3 +744,42 @@ textarea:focus {
 .thumb.ended .thumb-img {
   filter: grayscale(0.6) brightness(0.45);
 }
+
+/* 후원 */
+.donations {
+  margin-top: 20px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+.donations h2 {
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+.donation-total,
+.donation-amount {
+  color: var(--accent);
+}
+
+.donation-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.donation-form input[type="number"] {
+  width: 140px;
+}
+
+.donation-list {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}

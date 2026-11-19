@@ -9,6 +9,7 @@ import { closeSession, whep, type Session } from "@/lib/webrtc";
 import StatusBadge from "@/components/StatusBadge";
 import Chat from "@/components/Chat";
 import Comments from "@/components/Comments";
+import Donations from "@/components/Donations";
 import BroadcastRecordings from "@/components/BroadcastRecordings";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { elapsed, useNow } from "@/lib/time";
@@ -180,6 +181,7 @@ export default function BroadcastPage() {
         {b.status === "ENDED" && <BroadcastRecordings broadcastId={Number(id)} />}
         {!editing && b.description && <p className="watch-desc">{b.description}</p>}
         {error && <p className="error">{error}</p>}
+        <Donations b={b} />
         <Comments broadcastId={Number(id)} />
         <ConfirmDialog
           open={confirmDelete}

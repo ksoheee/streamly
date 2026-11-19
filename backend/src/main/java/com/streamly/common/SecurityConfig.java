@@ -43,6 +43,7 @@ public class SecurityConfig {
                         "/api/broadcasts/*/chats",
                         "/api/broadcasts/*/comments",
                         "/api/broadcasts/*/thumbnail",
+                        "/api/broadcasts/*/donations",
                         "/api/broadcasts/*/recordings",
                         "/api/recordings",
                         "/api/recordings/*",

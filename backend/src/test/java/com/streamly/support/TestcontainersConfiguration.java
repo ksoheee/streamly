@@ -1,5 +1,6 @@
 package com.streamly.support;
 
+import com.streamly.donation.PaymentGateway;
 import com.streamly.media.MediaServerClient;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
@@ -22,5 +23,11 @@ public class TestcontainersConfiguration {
   @Primary
   MediaServerClient fakeMediaServerClient() {
     return new FakeMediaServerClient();
+  }
+
+  @Bean
+  @Primary
+  PaymentGateway fakePaymentGateway() {
+    return new FakePaymentGateway();
   }
 }

@@ -100,6 +100,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/donations/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/broadcasts": {
         parameters: {
             query?: never;
@@ -148,7 +164,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/broadcasts/{broadcastId}/comments": {
+    "/api/broadcasts/{broadcastId}/donations": {
         parameters: {
             query?: never;
             header?: never;
@@ -156,6 +172,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["list_1"];
+        put?: never;
+        post: operations["order"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/broadcasts/{broadcastId}/comments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_2"];
         put?: never;
         post: operations["create_1"];
         delete?: never;
@@ -171,7 +203,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_2"];
+        get: operations["list_3"];
         put?: never;
         post: operations["send"];
         delete?: never;
@@ -235,7 +267,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_3"];
+        get: operations["list_4"];
         put?: never;
         post?: never;
         delete?: never;
@@ -380,11 +412,40 @@ export interface components {
             id?: string;
             query?: string;
         };
+        ConfirmRequest: {
+            paymentKey: string;
+            orderId: string;
+            /** Format: int64 */
+            amount: number;
+        };
+        DonationResponse: {
+            /** Format: int64 */
+            id?: number;
+            donorName?: string;
+            /** Format: int64 */
+            amount?: number;
+            message?: string;
+            /** Format: date-time */
+            paidAt?: string;
+        };
         PublishTokenResponse: {
             token?: string;
             streamPath?: string;
             /** Format: date-time */
             expiresAt?: string;
+        };
+        OrderRequest: {
+            /** Format: int64 */
+            amount: number;
+            message?: string;
+        };
+        OrderResponse: {
+            orderId?: string;
+            /** Format: int64 */
+            amount?: number;
+            orderName?: string;
+            clientKey?: string;
+            customerKey?: string;
         };
         ChatRequest: {
             content: string;
@@ -429,10 +490,15 @@ export interface components {
             /** Format: date-time */
             createdAt?: string;
         };
+        DonationSummary: {
+            /** Format: int64 */
+            total?: number;
+            donations?: components["schemas"]["DonationResponse"][];
+        };
         CsrfToken: {
-            parameterName?: string;
-            token?: string;
             headerName?: string;
+            token?: string;
+            parameterName?: string;
         };
     };
     responses: never;
@@ -668,6 +734,30 @@ export interface operations {
             };
         };
     };
+    confirm: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DonationResponse"];
+                };
+            };
+        };
+    };
     list: {
         parameters: {
             query?: {
@@ -761,6 +851,54 @@ export interface operations {
     };
     list_1: {
         parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                broadcastId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DonationSummary"];
+                };
+            };
+        };
+    };
+    order: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                broadcastId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["OrderResponse"];
+                };
+            };
+        };
+    };
+    list_2: {
+        parameters: {
             query?: {
                 before?: number;
             };
@@ -809,7 +947,7 @@ export interface operations {
             };
         };
     };
-    list_2: {
+    list_3: {
         parameters: {
             query?: {
                 after?: number;
@@ -931,7 +1069,7 @@ export interface operations {
             };
         };
     };
-    list_3: {
+    list_4: {
         parameters: {
             query?: never;
             header?: never;
