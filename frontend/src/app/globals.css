@@ -598,3 +598,79 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 }
+
+/* 댓글 */
+.comments {
+  margin-top: 24px;
+}
+
+.comments h2 {
+  font-size: 1.1rem;
+  margin: 0 0 12px;
+}
+
+.comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.comment-form textarea {
+  resize: vertical;
+  font-family: inherit;
+}
+
+.comment-form > .btn {
+  align-self: flex-end;
+}
+
+.comment-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.comment {
+  display: flex;
+  gap: 10px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+}
+
+.comment-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.comment-meta {
+  margin: 0 0 4px;
+}
+
+.comment-text {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.comment-actions {
+  margin-top: 4px;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.link-btn:hover {
+  color: var(--accent);
+}
+
+.more {
+  width: 100%;
+  margin-top: 8px;
+}

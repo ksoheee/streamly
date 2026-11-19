@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth";
 import { closeSession, whep, type Session } from "@/lib/webrtc";
 import StatusBadge from "@/components/StatusBadge";
 import Chat from "@/components/Chat";
+import Comments from "@/components/Comments";
 import { elapsed, useNow } from "@/lib/time";
 
 export default function BroadcastPage() {
@@ -183,6 +184,7 @@ export default function BroadcastPage() {
         </div>
         {!editing && b.description && <p className="watch-desc">{b.description}</p>}
         {error && <p className="error">{error}</p>}
+        <Comments broadcastId={Number(id)} />
       </div>
       <Chat broadcastId={Number(id)} ended={b.status === "ENDED"} />
     </div>
