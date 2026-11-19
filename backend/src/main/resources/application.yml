@@ -27,6 +27,9 @@ streamly:
   publish-token-ttl: 10m
   reconnect-grace: 30s
   mediamtx-api-url: ${MEDIAMTX_API_URL:http://localhost:9997}
+  # MediaMTX 녹화 폴더. 운영은 compose 볼륨(/recordings), 로컬은 infra/recordings
+  recordings-dir: ${RECORDINGS_DIR:../infra/recordings}
+  recording-retention: 7d
 
 management:
   endpoints:

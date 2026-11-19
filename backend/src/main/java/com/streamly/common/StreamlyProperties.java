@@ -8,4 +8,6 @@ public record StreamlyProperties(
     String demoPassword,
     Duration publishTokenTtl,
     Duration reconnectGrace,
-    String mediamtxApiUrl) {}
+    String mediamtxApiUrl,
+    String recordingsDir,
+    Duration recordingRetention) {}

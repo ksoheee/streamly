@@ -42,7 +42,11 @@ public class SecurityConfig {
                         "/api/broadcasts/*",
                         "/api/broadcasts/*/chats",
                         "/api/broadcasts/*/comments",
-                        "/api/broadcasts/*/thumbnail")
+                        "/api/broadcasts/*/thumbnail",
+                        "/api/broadcasts/*/recordings",
+                        "/api/recordings",
+                        "/api/recordings/*",
+                        "/api/recordings/*/video")
                     .permitAll()
                     .requestMatchers(
                         "/api/auth/csrf",

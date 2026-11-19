@@ -17,3 +17,4 @@ frontend/openapi/
 # secrets
 .env
 *.env
+infra/recordings/
