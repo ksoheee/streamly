@@ -26,6 +26,13 @@ authHTTPExclude:
   - action: pprof
 
 pathDefaults:
+  # 녹화: 모든 방송을 fMP4 로 저장한다. 파일 하나가 끝나면 백엔드에 알려 DB 에 등록한다. 7일 뒤 자동 삭제.
+  record: yes
+  recordPath: /recordings/%path/%Y-%m-%d_%H-%M-%S-%f
+  recordFormat: fmp4
+  recordSegmentDuration: 1h
+  recordDeleteAfter: 168h
+  runOnRecordSegmentComplete: wget -q -O /dev/null --post-data=x http://app:8080/internal/mediamtx/recordings?path=$MTX_PATH&file=$MTX_SEGMENT_PATH&duration=$MTX_SEGMENT_DURATION
   # 송출이 실제로 시작/종료되면 (예전 이름 runOnReady/runOnNotReady) 백엔드 방송 상태를 바꾼다
   runOnAvailable: wget -q -O /dev/null --post-data=x http://app:8080/internal/mediamtx/events?type=ready&path=$MTX_PATH
   runOnUnavailable: wget -q -O /dev/null --post-data=x http://app:8080/internal/mediamtx/events?type=notready&path=$MTX_PATH
