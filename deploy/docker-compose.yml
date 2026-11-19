@@ -1,0 +1,61 @@
+# 운영 배포: deploy/ 에서 `docker compose up -d --build` 한 번으로 전체를 띄운다.
+# 설정값은 같은 폴더의 .env (예시는 .env.example)
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    depends_on: [app, frontend, mediamtx]
+
+  mediamtx:
+    # -ffmpeg 이미지에는 runOnReady 에서 쓰는 wget 이 들어 있다
+    image: bluenviron/mediamtx:latest-ffmpeg
+    restart: unless-stopped
+    ports:
+      - "8189:8189/udp"
+      - "8189:8189/tcp"
+    environment:
+      MTX_WEBRTCADDITIONALHOSTS: ${PUBLIC_IP}
+    volumes:
+      - ./mediamtx.yml:/mediamtx.yml:ro
+
+  app:
+    build: ../backend
+    restart: unless-stopped
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/streamly
+      DB_USERNAME: streamly
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DEMO_PASSWORD: ${DEMO_PASSWORD}
+      COOKIE_SECURE: "true"
+      MEDIAMTX_API_URL: http://mediamtx:9997
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build: ../frontend
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: streamly
+      POSTGRES_USER: streamly
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U streamly"]
+      interval: 5s
+      retries: 10
+
+volumes:
+  caddy_data:
+  pgdata:

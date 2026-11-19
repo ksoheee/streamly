@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 // MediaMTX → 서버 내부 호출 전용. Caddy에서 /internal/* 외부 접근을 막는다.
@@ -23,8 +24,6 @@ public class MediaMtxHookController {
       String protocol,
       String id,
       String query) {}
-
-  public record EventRequest(String type, String path) {}
 
   private final PublishTokens tokens;
   private final BroadcastRepository broadcasts;
@@ -55,11 +54,13 @@ public class MediaMtxHookController {
     return allowed ? ResponseEntity.ok().build() : ResponseEntity.status(401).build();
   }
 
+  // MediaMTX runOnReady/runOnNotReady 가 wget 으로 부른다: POST
+  // /internal/mediamtx/events?type=ready&path=...
   @PostMapping("/events")
-  public ResponseEntity<Void> event(@RequestBody EventRequest req) {
-    switch (req.type()) {
-      case "ready" -> lifecycle.onReady(req.path());
-      case "notready" -> lifecycle.onNotReady(req.path());
+  public ResponseEntity<Void> event(@RequestParam String type, @RequestParam String path) {
+    switch (type) {
+      case "ready" -> lifecycle.onReady(path);
+      case "notready" -> lifecycle.onNotReady(path);
       default -> {
         return ResponseEntity.badRequest().build();
       }

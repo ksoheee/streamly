@@ -1,56 +1,152 @@
-# streamly
+# Streamly
 
-치지직 같은 라이브 스트리밍 서비스. 사람의 판단을 검증 가능한 신호로 바꾸고, 에이전트가 그 신호를 기준으로 스스로 고치는 개발 파이프라인 위에서 만든다.
+브라우저만으로 라이브 방송을 송출하고 시청하는 웹 서비스입니다. PC는 화면 공유 + 탭(시스템) 소리 + 마이크로, 휴대폰은 카메라 + 마이크로 방송하고, 다른 기기에서 실시간으로 시청합니다.
 
-## 자동 수정 루프 1 (코드 레벨)
+## 서비스 주소
 
-| 항목 | 구현 |
+- **https://TODO.sslip.io** (배포 후 채움)
+
+## 테스트 계정
+
+| 계정 | 아이디 | 비밀번호 | 용도 |
+|---|---|---|---|
+| 테스트 계정 1 | `demo-owner` | `TODO` | 방송자 (방송 만들기·송출·수정·삭제) |
+| 테스트 계정 2 | `demo-viewer` | `TODO` | 다른 사용자 (남의 방송 수정·삭제·송출이 거절되는지 확인) |
+
+**원클릭 로그인:** 로그인 화면의 **[테스트 계정 1 (방송자)]**, **[테스트 계정 2 (다른 사용자)]** 버튼을 누르면 비밀번호 없이 바로 로그인됩니다.
+
+## 시연 영상
+
+- **TODO** (PC·모바일 송출 → 다른 기기에서 시청 → 종료)
+
+## 기능 확인 방법
+
+### 지원 환경
+
+| 기능 | 환경 |
 |---|---|
-| 감지 신호 | `ci.yml`: 포맷(Spotless), 테스트(Testcontainers), OpenAPI → 프론트 타입 검사, 보호 규칙(guard) |
-| 정답 기준 | 위 검사가 모두 통과. `acceptance/` 인수 테스트는 사람이 직접 커밋하고, 에이전트는 수정할 수 없음 |
-| 되돌리기 | 모든 작업은 PR 브랜치에서만. main은 브랜치 보호 |
-| 멈춤 조건 | `autofix.yml`: 최대 3회 (라벨 `autofix-1..3`). 넘기거나 Claude가 고치지 못하면 `needs-human` 라벨과 이슈 생성 |
+| PC 송출 | **Chrome 최신 버전**. 맥은 Chrome **탭** 소리만 공유됩니다. 윈도우는 '전체 화면'을 고르면 시스템 소리도 공유됩니다. |
+| 모바일 송출 | **Android Chrome**, **iOS Safari** |
+| 시청 | 위 브라우저 모두 (로그인 없이 가능) |
 
-성공하면 `autofix-succeeded` 라벨이 붙는다. 라벨로 자동 수정 성공률을 집계할 수 있다.
+Firefox, 맥 Safari의 PC 송출은 지원하지 않습니다. 화면 공유와 카메라는 HTTPS에서만 동작합니다.
 
-## 처음 세팅 (순서대로)
+### PC 방송 (화면 + 탭 소리 + 마이크)
 
-1. **GitHub에 빈 레포 만들기**
-2. **CODEOWNERS 수정**: `.github/CODEOWNERS` 의 `YOUR_GITHUB_ID` 를 본인 아이디로 바꾸기 (앞에 `@` 유지)
-3. **포맷 맞추고 push**
-   ```bash
-   cd backend && ./gradlew spotlessApply && cd ..
-   git init -b main && git add . && git commit -m "chore: 프로젝트 초기 세팅"
-   git remote add origin https://github.com/<아이디>/<레포>.git
-   git push -u origin main
-   ```
-4. **Claude GitHub App 설치**: https://github.com/apps/claude 에서 이 레포에 설치
-5. **토큰 등록**: 터미널에서 `claude setup-token` 실행 → 나온 토큰을 레포 Settings → Secrets and variables → Actions 에 `CLAUDE_CODE_OAUTH_TOKEN` 이름으로 추가
-6. **main 브랜치 보호** (Settings → Branches → Add rule, `main`)
-   - Require a pull request before merging
-   - Require status checks to pass: `backend`, `frontend`, `guard`
-   - Require review from Code Owners
-   - 1인 개발이라 본인 PR은 본인이 승인할 수 없으므로, 관리자 우회(bypass)는 허용해 둔다
+1. PC Chrome으로 접속해 **[테스트 계정 1 (방송자)]**로 로그인합니다.
+2. 오른쪽 위 **[방송하기]** → 제목 입력 → **[만들고 송출 화면으로]**
+3. **PC 화면 공유**가 선택된 상태에서 **[방송 시작]**
+4. 공유 창에서 **'Chrome 탭'**을 고르고 **'탭 오디오도 공유'**를 켠 뒤 공유합니다. 마이크 권한을 허용합니다.
+   - 탭 소리가 잡히지 않으면 화면에 안내 문구가 나옵니다.
+5. 다른 기기(휴대폰 등)에서 서비스 주소로 접속 → 목록에서 **● LIVE** 방송 선택 → **[🔊 소리 켜기]**
+6. PC에서 **[방송 종료]**를 누르거나 브라우저의 **'공유 중지'**를 누르면 송출이 끊기고, 시청 화면에 **"방송이 종료되었습니다"**가 표시됩니다.
 
-## 루프가 도는지 확인하기
+### 모바일 방송 (카메라 + 마이크)
 
-일부러 포맷을 깨뜨린 PR을 올려서 Claude가 고치는지 본다.
+1. 휴대폰으로 접속해 테스트 계정 1로 로그인 → **[방송하기]** → 제목 입력
+2. 송출 화면에서 **카메라**가 선택됩니다. 전면/후면 카메라를 고르고 **[방송 시작]** → 카메라·마이크 권한 허용
+3. 방송 중 **[카메라 전환]**으로 전면/후면을 끊김 없이 바꿉니다.
+4. 다른 기기에서 목록 → 방송 선택 → 시청
+5. **[방송 종료]** → 시청 화면에 종료 표시
 
-```bash
-git checkout -b test/autofix
-# StreamlyApplication.java 의 들여쓰기를 망가뜨린다
-sed -i 's/^  public static/      public static/' backend/src/main/java/com/streamly/StreamlyApplication.java
-git commit -am "test: 자동 수정 루프 확인" && git push -u origin test/autofix
-gh pr create --fill
+### 방송 관리 · 상태
+
+- 방송 상세에서 소유자는 **[수정]**, **[삭제]**를 할 수 있습니다. 방송 중인 방송을 삭제하면 송출도 끊깁니다.
+- 목록은 방송 중(LIVE)이 먼저 나오고, 전체/방송 중/종료로 거를 수 있습니다.
+- 방송 1건은 송출 1회용입니다. **방송 전 → 방송 중 → 종료**로만 바뀌고, 종료된 방송은 다시 송출할 수 없습니다.
+- 송출이 잠깐 끊기면 30초 동안 "재연결 중"으로 유지되고, 그 안에 다시 시작하면 방송이 이어집니다. 30초가 지나면 종료됩니다.
+- 방송 정보는 PostgreSQL에 저장되어 서버를 재시작해도 그대로 조회됩니다.
+
+### 인증 · 인가
+
+| 기능 | 비로그인 | 방송 소유자 | 다른 사용자 |
+|---|---|---|---|
+| 방송 목록·상세 조회, 시청 | 허용 | 허용 | 허용 |
+| 방송 등록 | 거절(401) | 허용 | 허용(본인 방송) |
+| 방송 수정·삭제 | 거절(401) | 허용 | 거절(403) |
+| 송출 시작·종료 | 거절(401) | 허용 | 거절(403) |
+
+모든 검증은 서버에서 합니다. 송출은 소유자만 받을 수 있는 10분짜리 송출 토큰으로 하고, 미디어 서버가 송출 요청마다 백엔드에 토큰·소유자·방송 상태를 확인합니다. 테스트 계정 2로 로그인해 테스트 계정 1의 방송을 열면 수정·삭제·송출 버튼이 보이지 않고, API를 직접 호출해도 403이 반환됩니다.
+
+## 구조
+
+```
+브라우저 ──HTTPS──▶ Caddy ─┬─ /api/*              → app (Spring Boot)  ── PostgreSQL
+                           ├─ /<경로>/whip, /whep → MediaMTX (WebRTC)
+                           └─ 나머지              → frontend (Next.js)
+MediaMTX ──송출 인증·상태 이벤트──▶ app /internal/* (외부 차단)
 ```
 
-기대 결과: CI 실패 → Autofix 실행 → `autofix-1` 라벨 → `fix(autofix): ...` 커밋 → CI 통과 → `autofix-succeeded` 라벨.
+| 구성 | 선택 |
+|---|---|
+| 백엔드 | Spring Boot 3.5, Java 21, Spring Security(세션 쿠키 + CSRF), JPA, Flyway |
+| DB | PostgreSQL 16 |
+| 미디어 서버 | MediaMTX: 브라우저 WebRTC 송출(WHIP)·시청(WHEP) |
+| 프론트엔드 | Next.js 15 (React, TypeScript) |
+| HTTPS | Caddy + sslip.io (인증서 자동 발급) |
+| 서버 | OCI Ampere A1 (ARM) |
 
-## 로컬 개발
+## 실행 방법
+
+### 실행 환경
+
+- Docker, Docker Compose
+- 열어야 할 포트: TCP 80, 443, 8189 / UDP 8189
+- 공인 IP (도메인은 sslip.io로 자동: IP `1.2.3.4` → `1-2-3-4.sslip.io`)
+
+### 배포 (서버)
+
+Ubuntu 24.04 서버에서 한 번에 세팅하고 배포하기 (방화벽 개방, Docker 설치, 코드 받기, `.env` 생성, 실행):
 
 ```bash
-docker compose -f infra/docker-compose.yml up -d
-cd backend && ./gradlew bootRun
+curl -fsSLO https://raw.githubusercontent.com/ksoheee/streamly/main/deploy/setup-server.sh
+PUBLIC_IP=1.2.3.4 POSTGRES_PASSWORD=change-me DEMO_PASSWORD=change-me bash setup-server.sh
 ```
 
-에이전트 작업 규칙과 아키텍처 결정은 [CLAUDE.md](CLAUDE.md) 참고.
+직접 하려면:
+
+```bash
+git clone https://github.com/ksoheee/streamly.git
+cd streamly/deploy
+cp .env.example .env   # 값 수정
+docker compose up -d --build
+```
+
+### 환경변수 예시 (`deploy/.env`)
+
+```bash
+PUBLIC_IP=1.2.3.4             # 서버 공인 IP (WebRTC 연결 주소)
+DOMAIN=1-2-3-4.sslip.io       # 접속 도메인 (Caddy가 HTTPS 인증서 발급)
+POSTGRES_PASSWORD=change-me   # DB 비밀번호
+DEMO_PASSWORD=change-me       # 테스트 계정 비밀번호
+```
+
+### 로컬 개발
+
+```bash
+docker compose -f infra/docker-compose.yml up -d    # PostgreSQL, MediaMTX
+cd backend && ./gradlew bootRun                      # Java 21, http://localhost:8080
+cd frontend && npm install && npm run dev            # http://localhost:3000
+cd backend && ./gradlew spotlessApply test           # 포맷 + 테스트 (Docker 필요)
+```
+
+로컬에서는 Next.js가 `/api`를 백엔드로, WHIP/WHEP를 MediaMTX로 넘깁니다. 화면 공유와 카메라는 `localhost`에서도 동작합니다.
+
+## 오픈소스 출처
+
+| 오픈소스 | 용도 | 라이선스 |
+|---|---|---|
+| [MediaMTX](https://github.com/bluenviron/mediamtx) | WebRTC 송출·시청 중계 | MIT |
+| [Caddy](https://github.com/caddyserver/caddy) | HTTPS, 리버스 프록시 | Apache 2.0 |
+| [sslip.io](https://sslip.io) | IP 기반 도메인 | — |
+| Spring Boot, Spring Security, Flyway, Testcontainers | 백엔드, 테스트 | Apache 2.0 |
+| Next.js, React | 프론트엔드 | MIT |
+
+WHIP/WHEP 송출·시청 로직은 이 프로젝트를 위해 먼저 만든 테스트 키트(`studio.html`, `watch.html`)에서 실기기로 검증한 뒤 옮겼습니다.
+
+## AI 개발 도구 활용
+
+- **Claude Code**로 개발했습니다. 사람은 ① 무엇을 만들지 정하고 ② 정답 기준(인수 테스트)을 승인하고 ③ 에이전트가 멈춘 지점(`needs-human`)을 처리합니다.
+- 작업 규칙은 [CLAUDE.md](CLAUDE.md)에 있습니다. 인가 인수 테스트(`acceptance/`), CI 설정, CLAUDE.md는 에이전트가 수정할 수 없고 CI의 `guard` 잡이 검사합니다.
+- 모든 변경은 PR로 들어가고, CI(`backend`: 포맷·테스트, `frontend`: OpenAPI 타입 생성·타입 검사·빌드, `guard`)를 통과해야 머지됩니다.
+- CI가 실패하면 `autofix.yml`이 Claude로 최대 3회 자동 수정을 시도하고, 실패하면 `needs-human` 이슈를 만듭니다.

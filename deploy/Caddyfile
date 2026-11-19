@@ -1,0 +1,21 @@
+{$DOMAIN} {
+	encode gzip
+
+	# 서버 내부 전용 (MediaMTX ↔ 백엔드, 운영 지표). 외부에서는 막는다.
+	@blocked path /internal/* /actuator/*
+	respond @blocked 404
+
+	handle /api/* {
+		reverse_proxy app:8080
+	}
+
+	# 브라우저 송출(WHIP)·시청(WHEP): /<streamPath>/whip, /<streamPath>/whep(/<세션>)
+	@media path_regexp ^/[^/]+/(whip|whep)(/.*)?$
+	handle @media {
+		reverse_proxy mediamtx:8889
+	}
+
+	handle {
+		reverse_proxy frontend:3000
+	}
+}
