@@ -122,6 +122,9 @@ export default function BroadcastPage() {
       <div className="row" style={{ marginTop: 12 }}>
         <StatusBadge b={b} />
         <span className="muted">{b.ownerName}</span>
+        <Link href="/" className="btn" style={{ marginLeft: "auto" }}>
+          나가기
+        </Link>
       </div>
 
       {editing ? (

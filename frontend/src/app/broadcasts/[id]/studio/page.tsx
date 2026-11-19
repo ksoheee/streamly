@@ -85,7 +85,8 @@ export default function StudioPage() {
   // 화면(탭/시스템 소리 포함) + 마이크. 두 소리를 Web Audio로 하나의 트랙으로 섞는다.
   async function captureForPc(): Promise<MediaStream> {
     const display = await navigator.mediaDevices.getDisplayMedia({
-      video: { frameRate: 30 },
+      // 레티나 화면 원본 해상도는 휴대폰 H.264 디코더 한도를 넘어 시청 시 영상만 안 나온다. 720p로 낮춘다.
+      video: { frameRate: 30, width: { max: 1280 }, height: { max: 720 } },
       audio: { suppressLocalAudioPlayback: false },
       systemAudio: "include",
     } as DisplayMediaStreamOptions);
