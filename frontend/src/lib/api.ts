@@ -4,6 +4,7 @@ export type Broadcast = components["schemas"]["BroadcastResponse"];
 export type PublishToken = components["schemas"]["PublishTokenResponse"];
 export type Me = components["schemas"]["MeResponse"];
 export type BroadcastRequest = components["schemas"]["BroadcastRequest"];
+export type ChatMessage = components["schemas"]["ChatResponse"];
 
 export class ApiError extends Error {
   constructor(

@@ -7,6 +7,8 @@ import { api, ApiError, type Broadcast } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { closeSession, whep, type Session } from "@/lib/webrtc";
 import StatusBadge from "@/components/StatusBadge";
+import Chat from "@/components/Chat";
+import { elapsed, useNow } from "@/lib/time";
 
 export default function BroadcastPage() {
   const { id } = useParams<{ id: string }>();
@@ -20,6 +22,7 @@ export default function BroadcastPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const sessionRef = useRef<Session | null>(null);
   const connectingRef = useRef(false);
+  const now = useNow();
 
   const disconnect = useCallback(async () => {
     const s = sessionRef.current;
@@ -102,74 +105,87 @@ export default function BroadcastPage() {
   else if (!connected) overlay = "연결 중…";
 
   return (
-    <>
-      <div className="player">
-        <video ref={videoRef} autoPlay playsInline muted={muted} />
-        {overlay && <div className="overlay">{overlay}</div>}
-      </div>
-      {b.status === "LIVE" && connected && muted && (
-        <button
-          className="btn primary"
-          onClick={() => {
-            setMuted(false);
-            videoRef.current?.play();
-          }}
-        >
-          🔊 소리 켜기
-        </button>
-      )}
-
-      <div className="row" style={{ marginTop: 12 }}>
-        <StatusBadge b={b} />
-        <span className="muted">{b.ownerName}</span>
-        <Link href="/" className="btn" style={{ marginLeft: "auto" }}>
-          나가기
-        </Link>
-      </div>
-
-      {editing ? (
-        <EditForm
-          b={b}
-          onDone={(updated) => {
-            if (updated) setB(updated);
-            setEditing(false);
-          }}
-        />
-      ) : (
-        <>
-          <h1 style={{ marginTop: 8 }}>{b.title}</h1>
-          {b.description && <p>{b.description}</p>}
-        </>
-      )}
-
-      {isOwner && !editing && (
-        <div className="row">
-          {b.status !== "ENDED" && (
-            <Link href={`/broadcasts/${b.id}/studio`} className="btn primary">
-              송출 화면으로
-            </Link>
+    <div className="watch">
+      <div className="watch-main">
+        <div className="player">
+          <video ref={videoRef} autoPlay playsInline muted={muted} />
+          {overlay && <div className="overlay">{overlay}</div>}
+          {b.status === "LIVE" && connected && muted && (
+            <button
+              className="btn primary unmute"
+              onClick={() => {
+                setMuted(false);
+                videoRef.current?.play();
+              }}
+            >
+              소리 켜기
+            </button>
           )}
-          <button className="btn" onClick={() => setEditing(true)}>
-            수정
-          </button>
-          <button
-            className="btn danger"
-            onClick={async () => {
-              if (!confirm("방송을 삭제할까요? 방송 중이면 송출도 끊깁니다.")) return;
-              try {
-                await api("DELETE", `/api/broadcasts/${b.id}`);
-                router.push("/");
-              } catch (e) {
-                setError((e as Error).message);
-              }
-            }}
-          >
-            삭제
-          </button>
         </div>
-      )}
-      {error && <p className="error">{error}</p>}
-    </>
+
+        {editing ? (
+          <EditForm
+            b={b}
+            onDone={(updated) => {
+              if (updated) setB(updated);
+              setEditing(false);
+            }}
+          />
+        ) : (
+          <h1 className="watch-title">{b.title}</h1>
+        )}
+        <p className="muted watch-meta">
+          <StatusBadge b={b} />
+          {b.status === "LIVE" && (
+            <>
+              <span>{b.viewerCount ?? 0}명 시청 중</span>
+              <span>· {elapsed(b.startedAt, now)} 스트리밍 중</span>
+            </>
+          )}
+        </p>
+
+        <div className="row between owner-row">
+          <div className="row">
+            <span className="avatar">{b.ownerName?.slice(0, 1).toUpperCase()}</span>
+            <strong>{b.ownerName}</strong>
+          </div>
+          <div className="row">
+            {isOwner && !editing && (
+              <>
+                {b.status !== "ENDED" && (
+                  <Link href={`/broadcasts/${b.id}/studio`} className="btn primary">
+                    송출 화면으로
+                  </Link>
+                )}
+                <button className="btn" onClick={() => setEditing(true)}>
+                  수정
+                </button>
+                <button
+                  className="btn danger"
+                  onClick={async () => {
+                    if (!confirm("방송을 삭제할까요? 방송 중이면 송출도 끊깁니다.")) return;
+                    try {
+                      await api("DELETE", `/api/broadcasts/${b.id}`);
+                      router.push("/");
+                    } catch (e) {
+                      setError((e as Error).message);
+                    }
+                  }}
+                >
+                  삭제
+                </button>
+              </>
+            )}
+            <Link href="/" className="btn">
+              나가기
+            </Link>
+          </div>
+        </div>
+        {!editing && b.description && <p className="watch-desc">{b.description}</p>}
+        {error && <p className="error">{error}</p>}
+      </div>
+      <Chat broadcastId={Number(id)} ended={b.status === "ENDED"} />
+    </div>
   );
 }
 
