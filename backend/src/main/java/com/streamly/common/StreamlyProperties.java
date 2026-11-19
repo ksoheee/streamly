@@ -10,4 +10,6 @@ public record StreamlyProperties(
     Duration reconnectGrace,
     String mediamtxApiUrl,
     String recordingsDir,
-    Duration recordingRetention) {}
+    Duration recordingRetention,
+    String tossClientKey,
+    String tossSecretKey) {}
