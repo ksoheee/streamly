@@ -28,6 +28,9 @@ export default function StudioPage() {
   const videoSenderRef = useRef<RTCRtpSender | null>(null);
   const tracksRef = useRef<MediaStreamTrack[]>([]);
   const audioCtxRef = useRef<AudioContext | null>(null);
+  const mixDestRef = useRef<MediaStreamAudioDestinationNode | null>(null);
+  const tabAudioRef = useRef<MediaStreamAudioSourceNode | null>(null);
+  const displayTracksRef = useRef<MediaStreamTrack[]>([]);
   const endingRef = useRef(false);
 
   useEffect(() => {
@@ -100,9 +103,12 @@ export default function StudioPage() {
     audioCtxRef.current = ctx;
     await ctx.resume();
     const dest = ctx.createMediaStreamDestination();
+    mixDestRef.current = dest;
+    displayTracksRef.current = display.getTracks();
     const tabAudio = display.getAudioTracks();
     if (tabAudio.length) {
-      ctx.createMediaStreamSource(new MediaStream(tabAudio)).connect(dest);
+      tabAudioRef.current = ctx.createMediaStreamSource(new MediaStream(tabAudio));
+      tabAudioRef.current.connect(dest);
       setNotice("");
     } else {
       setNotice(
@@ -149,6 +155,46 @@ export default function StudioPage() {
     } finally {
       setBusy(false);
     }
+  }
+
+  // 방송을 끊지 않고 공유할 화면(탭·창)만 바꾼다. 영상 트랙은 replaceTrack, 탭 소리는 믹서에서 갈아 끼운다.
+  async function switchScreen() {
+    const sender = videoSenderRef.current;
+    const ctx = audioCtxRef.current;
+    const dest = mixDestRef.current;
+    if (!sender || !ctx || !dest) return;
+    let display: MediaStream;
+    try {
+      display = await navigator.mediaDevices.getDisplayMedia({
+        video: { frameRate: 30, width: { max: 1280 }, height: { max: 720 } },
+        audio: { suppressLocalAudioPlayback: false },
+        systemAudio: "include",
+      } as DisplayMediaStreamOptions);
+    } catch {
+      return; // 선택 창에서 취소하면 지금 화면을 그대로 송출한다
+    }
+    const old = displayTracksRef.current;
+    old.forEach((t) => (t.onended = null));
+    const video = display.getVideoTracks()[0];
+    video.onended = () => void end();
+    const sent = keepFramesFlowing(video);
+    await sender.replaceTrack(sent);
+
+    tabAudioRef.current?.disconnect();
+    tabAudioRef.current = null;
+    const tabAudio = display.getAudioTracks();
+    if (tabAudio.length) {
+      tabAudioRef.current = ctx.createMediaStreamSource(new MediaStream(tabAudio));
+      tabAudioRef.current.connect(dest);
+      setNotice("");
+    } else {
+      setNotice("바꾼 화면의 소리는 잡히지 않았습니다. 탭 소리를 보내려면 'Chrome 탭'을 고르고 '탭 오디오도 공유'를 켜 주세요.");
+    }
+
+    old.forEach((t) => t.stop());
+    tracksRef.current = [...tracksRef.current.filter((t) => !old.includes(t)), ...display.getTracks()];
+    displayTracksRef.current = display.getTracks();
+    if (previewRef.current) previewRef.current.srcObject = new MediaStream([sent, ...dest.stream.getAudioTracks()]);
   }
 
   // 방송을 끊지 않고 카메라만 바꾼다. 휴대폰은 카메라 두 개를 동시에 못 여는 경우가 많아 기존 카메라를 먼저 끈다.
@@ -251,6 +297,11 @@ export default function StudioPage() {
             <button className="btn danger" disabled={busy} onClick={end}>
               방송 종료
             </button>
+            {kind === "pc" && (
+              <button className="btn" disabled={busy} onClick={switchScreen}>
+                공유 화면 바꾸기
+              </button>
+            )}
             {kind === "mobile" && (
               <button className="btn" disabled={busy} onClick={flipCamera}>
                 카메라 전환
