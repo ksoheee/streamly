@@ -120,6 +120,17 @@ export function keepFramesFlowing(track: MediaStreamTrack, idleMs = 500): MediaS
     lastAt = performance.now();
     writer.write(new VideoFrame(f, { timestamp: Math.round(lastAt * 1000) })).catch(() => {});
   };
+  // 같은 화면 공유 프레임을 그대로 다시 넣으면 Chrome이 이미 보낸 프레임으로 보고 압축하지 않는다(실측: enc 정지).
+  // 캔버스에 다시 그려 새 프레임으로 만든다.
+  let canvas: OffscreenCanvas | null = null;
+  const repeat = (f: VideoFrame) => {
+    if (!canvas || canvas.width !== f.displayWidth || canvas.height !== f.displayHeight) {
+      canvas = new OffscreenCanvas(f.displayWidth, f.displayHeight);
+    }
+    canvas.getContext("2d")?.drawImage(f, 0, 0);
+    lastAt = performance.now();
+    writer.write(new VideoFrame(canvas, { timestamp: Math.round(lastAt * 1000) })).catch(() => {});
+  };
   // 송출 탭이 뒤로 가면 탭의 setInterval 은 1초~1분에 한 번으로 느려진다. 워커 타이머는 느려지지 않아 워커가 박자를 준다.
   const ticker = new Worker(
     URL.createObjectURL(
@@ -129,7 +140,7 @@ export function keepFramesFlowing(track: MediaStreamTrack, idleMs = 500): MediaS
     ),
   );
   ticker.onmessage = () => {
-    if (last && performance.now() - lastAt >= idleMs) push(last);
+    if (last && performance.now() - lastAt >= idleMs) repeat(last);
   };
   void (async () => {
     for (;;) {

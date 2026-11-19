@@ -1,0 +1,34 @@
+# 로컬 개발용 MediaMTX 설정 (deploy/mediamtx.yml 과 같고, 백엔드 주소만 호스트로 바꿈)
+logLevel: info
+
+# Control API: 백엔드가 송출을 끊고(kick) 상태를 확인할 때 쓴다. compose 내부망에서만 접근.
+api: yes
+apiAddress: :9997
+
+rtsp: no
+rtmp: no
+hls: no
+srt: no
+
+webrtc: yes
+webrtcAddress: :8889
+webrtcLocalUDPAddress: :8189
+# UDP가 막힌 모바일망 대비
+webrtcLocalTCPAddress: :8189
+# 공인 IP는 compose 의 MTX_WEBRTCADDITIONALHOSTS 로 넣는다
+
+# 송출 요청마다 백엔드에 묻는다. 백엔드가 토큰·소유자·방송 상태를 검증한다. 시청(read)은 백엔드가 모두 허용.
+authMethod: http
+authHTTPAddress: http://host.docker.internal:8080/internal/mediamtx/auth
+authHTTPExclude:
+  - action: api
+  - action: metrics
+  - action: pprof
+
+pathDefaults:
+  # 송출이 실제로 시작/종료되면 (예전 이름 runOnReady/runOnNotReady) 백엔드 방송 상태를 바꾼다
+  runOnAvailable: wget -q -O /dev/null --post-data=x http://host.docker.internal:8080/internal/mediamtx/events?type=ready&path=$MTX_PATH
+  runOnUnavailable: wget -q -O /dev/null --post-data=x http://host.docker.internal:8080/internal/mediamtx/events?type=notready&path=$MTX_PATH
+
+paths:
+  all_others:
