@@ -64,9 +64,24 @@ h1 {
 }
 
 .logo-text {
-  font-weight: 800;
-  font-size: 1.25rem;
-  letter-spacing: -0.02em;
+  position: relative;
+  font-size: 1.4rem;
+  line-height: 1.3;
+  padding-bottom: 4px;
+}
+
+.logo-swash {
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 8px;
+  color: var(--accent);
+}
+
+/* 넓은 화면은 워드마크만, 좁은 화면은 S 아이콘만 */
+.logo-mark {
+  display: none;
 }
 
 .logo-accent {
@@ -583,6 +598,10 @@ textarea:focus {
   .logo-text,
   .hide-sm {
     display: none;
+  }
+
+  .logo-mark {
+    display: block;
   }
 
   .container {
