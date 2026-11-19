@@ -96,3 +96,44 @@ export async function closeSession(s: Session | null) {
   }
   s.pc.close();
 }
+
+// Chrome은 공유 화면이 멈춰 있으면 새 프레임을 보내지 않는다. 그러면 나중에 들어온 시청자는 키프레임을 못 받아
+// 소리만 나오고 영상이 검게 남는다. 화면이 멈춘 동안 마지막 프레임을 1초마다 다시 보낸다.
+// MediaStreamTrackProcessor/Generator 가 없는 브라우저(사파리 등)는 원래 트랙을 그대로 쓴다.
+type FrameReader = { read(): Promise<{ value?: VideoFrame; done: boolean }> };
+type FrameWriter = { write(f: VideoFrame): Promise<void> };
+declare const MediaStreamTrackProcessor: new (o: { track: MediaStreamTrack }) => {
+  readable: { getReader(): FrameReader };
+};
+declare const MediaStreamTrackGenerator: new (o: { kind: "video" }) => MediaStreamTrack & {
+  writable: { getWriter(): FrameWriter };
+};
+
+export function keepFramesFlowing(track: MediaStreamTrack, idleMs = 1000): MediaStreamTrack {
+  if (!("MediaStreamTrackProcessor" in window) || !("MediaStreamTrackGenerator" in window)) return track;
+  const reader = new MediaStreamTrackProcessor({ track }).readable.getReader();
+  const gen = new MediaStreamTrackGenerator({ kind: "video" });
+  const writer = gen.writable.getWriter();
+  let last: VideoFrame | null = null;
+  let lastAt = 0;
+  const push = (f: VideoFrame) => {
+    lastAt = performance.now();
+    writer.write(new VideoFrame(f, { timestamp: Math.round(lastAt * 1000) })).catch(() => {});
+  };
+  const timer = setInterval(() => {
+    if (last && performance.now() - lastAt >= idleMs) push(last);
+  }, idleMs / 2);
+  void (async () => {
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done || !value) break;
+      last?.close();
+      last = value;
+      push(value);
+    }
+    clearInterval(timer);
+    last?.close();
+    gen.stop();
+  })();
+  return gen;
+}

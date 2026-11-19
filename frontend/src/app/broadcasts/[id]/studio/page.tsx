@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, type Broadcast, type PublishToken } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import { closeSession, whip, type Session } from "@/lib/webrtc";
+import { closeSession, whip, type Session, keepFramesFlowing } from "@/lib/webrtc";
 
 type Kind = "pc" | "mobile";
 type Facing = "user" | "environment";
@@ -114,7 +114,7 @@ export default function StudioPage() {
     const video = display.getVideoTracks()[0];
     // 브라우저의 '공유 중지'를 누르면 방송도 끝낸다
     video.onended = () => void end();
-    return new MediaStream([video, dest.stream.getAudioTracks()[0]]);
+    return new MediaStream([keepFramesFlowing(video), dest.stream.getAudioTracks()[0]]);
   }
 
   async function captureForMobile(): Promise<MediaStream> {
