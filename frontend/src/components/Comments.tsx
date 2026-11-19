@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { api, type Comment } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 const PAGE = 20;
 
@@ -32,6 +33,18 @@ export default function Comments({ broadcastId }: { broadcastId: number }) {
     load().catch((e) => setError(e.message));
   }, [load]);
 
+  // 5초마다 최신 20개를 다시 받아 새 댓글·수정·삭제를 반영한다 (더 보기로 불러온 오래된 댓글은 유지)
+  useEffect(() => {
+    const t = setInterval(async () => {
+      try {
+        const latest = await api<Comment[]>("GET", `/api/broadcasts/${broadcastId}/comments`);
+        const minId = latest.length ? (latest[latest.length - 1].id ?? 0) : Infinity;
+        setItems((prev) => [...latest, ...prev.filter((x) => (x.id ?? 0) < minId)]);
+      } catch {}
+    }, 5000);
+    return () => clearInterval(t);
+  }, [broadcastId]);
+
   async function run(action: () => Promise<unknown>) {
     setError("");
     try {
@@ -58,13 +71,12 @@ export default function Comments({ broadcastId }: { broadcastId: number }) {
       setEditingId(null);
     });
 
-  const remove = (id: number) => {
-    if (!confirm("댓글을 삭제할까요?")) return;
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const remove = (id: number) =>
     run(async () => {
       await api("DELETE", `/api/comments/${id}`);
       setItems((prev) => prev.filter((x) => x.id !== id));
     });
-  };
 
   return (
     <section className="comments" aria-label="댓글">
@@ -132,7 +144,7 @@ export default function Comments({ broadcastId }: { broadcastId: number }) {
                   >
                     수정
                   </button>
-                  <button className="link-btn" onClick={() => remove(c.id!)}>
+                  <button className="link-btn" onClick={() => setDeletingId(c.id!)}>
                     삭제
                   </button>
                 </div>
@@ -141,6 +153,15 @@ export default function Comments({ broadcastId }: { broadcastId: number }) {
           </li>
         ))}
       </ul>
+      <ConfirmDialog
+        open={deletingId !== null}
+        message="댓글을 삭제할까요?"
+        onCancel={() => setDeletingId(null)}
+        onConfirm={() => {
+          if (deletingId !== null) remove(deletingId);
+          setDeletingId(null);
+        }}
+      />
       {hasMore && (
         <button className="btn more" onClick={() => run(() => load(items[items.length - 1].id))}>
           더 보기

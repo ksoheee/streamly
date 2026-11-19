@@ -674,3 +674,32 @@ textarea:focus {
   width: 100%;
   margin-top: 8px;
 }
+
+/* 확인창 */
+.confirm {
+  width: min(320px, calc(100vw - 32px));
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  color: var(--text);
+}
+
+.confirm::backdrop {
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.confirm p {
+  margin: 0 0 16px;
+}
+
+.confirm-actions {
+  justify-content: flex-end;
+}
+
+.btn.danger-fill {
+  background: var(--live);
+  border-color: var(--live);
+  color: #fff;
+  font-weight: 700;
+}
