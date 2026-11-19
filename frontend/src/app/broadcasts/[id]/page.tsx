@@ -10,6 +10,7 @@ import StatusBadge from "@/components/StatusBadge";
 import Chat from "@/components/Chat";
 import Comments from "@/components/Comments";
 import BroadcastRecordings from "@/components/BroadcastRecordings";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import { elapsed, useNow } from "@/lib/time";
 
 export default function BroadcastPage() {
@@ -21,6 +22,7 @@ export default function BroadcastPage() {
   const [connected, setConnected] = useState(false);
   const [muted, setMuted] = useState(true);
   const [editing, setEditing] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const sessionRef = useRef<Session | null>(null);
   const connectingRef = useRef(false);
@@ -164,15 +166,7 @@ export default function BroadcastPage() {
                 </button>
                 <button
                   className="btn danger"
-                  onClick={async () => {
-                    if (!confirm("방송을 삭제할까요? 방송 중이면 송출도 끊깁니다.")) return;
-                    try {
-                      await api("DELETE", `/api/broadcasts/${b.id}`);
-                      router.push("/");
-                    } catch (e) {
-                      setError((e as Error).message);
-                    }
-                  }}
+                  onClick={() => setConfirmDelete(true)}
                 >
                   삭제
                 </button>
@@ -187,6 +181,20 @@ export default function BroadcastPage() {
         {!editing && b.description && <p className="watch-desc">{b.description}</p>}
         {error && <p className="error">{error}</p>}
         <Comments broadcastId={Number(id)} />
+        <ConfirmDialog
+          open={confirmDelete}
+          message="방송을 삭제할까요? 방송 중이면 송출도 끊겨요."
+          onCancel={() => setConfirmDelete(false)}
+          onConfirm={async () => {
+            setConfirmDelete(false);
+            try {
+              await api("DELETE", `/api/broadcasts/${b.id}`);
+              router.push("/");
+            } catch (e) {
+              setError((e as Error).message);
+            }
+          }}
+        />
       </div>
       <Chat broadcastId={Number(id)} ended={b.status === "ENDED"} />
     </div>
