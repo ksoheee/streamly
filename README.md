@@ -4,7 +4,7 @@
 
 ## 서비스 주소
 
-- **https://34-47-103-199.sslip.io**
+- **https://streamly-live.duckdns.org**
 
 ## 테스트 계정
 
