@@ -53,6 +53,9 @@ public class Broadcast {
   @Column(name = "disconnected_at")
   private Instant disconnectedAt;
 
+  @Column(name = "thumbnail_updated_at")
+  private Instant thumbnailUpdatedAt;
+
   protected Broadcast() {}
 
   public Broadcast(User owner, String title, String description) {
@@ -129,6 +132,14 @@ public class Broadcast {
 
   public Instant getStartedAt() {
     return startedAt;
+  }
+
+  public Instant getThumbnailUpdatedAt() {
+    return thumbnailUpdatedAt;
+  }
+
+  public void markThumbnailUpdated() {
+    this.thumbnailUpdatedAt = Instant.now();
   }
 
   public Instant getEndedAt() {

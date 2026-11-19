@@ -22,7 +22,8 @@ public final class BroadcastDtos {
       Instant createdAt,
       Instant startedAt,
       Instant endedAt,
-      int viewerCount) {
+      int viewerCount,
+      Instant thumbnailUpdatedAt) {
 
     static BroadcastResponse from(Broadcast b) {
       return from(b, 0);
@@ -41,7 +42,8 @@ public final class BroadcastDtos {
           b.getCreatedAt(),
           b.getStartedAt(),
           b.getEndedAt(),
-          b.getStatus() == BroadcastStatus.LIVE ? viewerCount : 0);
+          b.getStatus() == BroadcastStatus.LIVE ? viewerCount : 0,
+          b.getThumbnailUpdatedAt());
     }
   }
 

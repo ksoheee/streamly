@@ -6,8 +6,18 @@ export default function BroadcastCard({ b, now }: { b: Broadcast; now: number })
   const live = b.status === "LIVE";
   return (
     <Link href={`/broadcasts/${b.id}`} className="bcard">
-      <div className="thumb">
-        <span className="thumb-initial">{b.title?.slice(0, 1)}</span>
+      <div className={`thumb ${b.status === "ENDED" ? "ended" : ""}`}>
+        {b.thumbnailUpdatedAt ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            className="thumb-img"
+            src={`/api/broadcasts/${b.id}/thumbnail?v=${encodeURIComponent(b.thumbnailUpdatedAt)}`}
+            alt=""
+            loading="lazy"
+          />
+        ) : (
+          <span className="thumb-initial">{b.title?.slice(0, 1)}</span>
+        )}
         {live ? (
           <>
             <span className="pill live">{b.reconnecting ? "재연결 중" : "LIVE"}</span>
@@ -15,7 +25,7 @@ export default function BroadcastCard({ b, now }: { b: Broadcast; now: number })
             <span className="pill dim time">{elapsed(b.startedAt, now)}</span>
           </>
         ) : (
-          <span className="pill dim">{b.status === "ENDED" ? "종료" : "방송 전"}</span>
+          <span className="pill dim">{b.status === "ENDED" ? "종료됨" : "방송 전"}</span>
         )}
       </div>
       <div className="bcard-info">
