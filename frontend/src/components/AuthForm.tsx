@@ -44,12 +44,15 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
       <h1>{mode === "login" ? "로그인" : "회원가입"}</h1>
       <form onSubmit={submit} className="form">
         <label>
-          아이디
+          아이디 {mode === "signup" && <span className="muted">(영문·숫자·_·- 3~30자, 이메일 불가)</span>}
           <input
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
             minLength={3}
+            maxLength={30}
+            pattern={mode === "signup" ? "[A-Za-z0-9_\\-]+" : undefined}
+            title={mode === "signup" ? "영문, 숫자, _, - 만 쓸 수 있어요" : undefined}
             autoComplete="username"
           />
         </label>
