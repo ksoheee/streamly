@@ -36,6 +36,8 @@ services:
       COOKIE_SECURE: "true"
       MEDIAMTX_API_URL: http://mediamtx:9997
       RECORDINGS_DIR: /recordings
+      TOSS_CLIENT_KEY: ${TOSS_CLIENT_KEY:-}
+      TOSS_SECRET_KEY: ${TOSS_SECRET_KEY:-}
     volumes:
       - recordings:/recordings
     depends_on:

@@ -7,6 +7,8 @@ export type BroadcastRequest = components["schemas"]["BroadcastRequest"];
 export type ChatMessage = components["schemas"]["ChatResponse"];
 export type Comment = components["schemas"]["CommentResponse"];
 export type Recording = components["schemas"]["RecordingResponse"];
+export type DonationOrder = components["schemas"]["OrderResponse"];
+export type DonationSummary = components["schemas"]["DonationSummary"];
 
 export class ApiError extends Error {
   constructor(
