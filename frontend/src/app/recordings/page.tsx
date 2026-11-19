@@ -30,7 +30,17 @@ export default function RecordingsPage() {
             <li key={r.id}>
               <Link href={`/recordings/${r.id}`} className="bcard">
                 <div className="thumb">
-                  <span className="thumb-initial">{r.title?.slice(0, 1)}</span>
+                  {r.thumbnailUpdatedAt ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      className="thumb-img"
+                      src={`/api/broadcasts/${r.broadcastId}/thumbnail?v=${encodeURIComponent(r.thumbnailUpdatedAt)}`}
+                      alt=""
+                      loading="lazy"
+                    />
+                  ) : (
+                    <span className="thumb-initial">{r.title?.slice(0, 1)}</span>
+                  )}
                   <span className="pill dim">다시보기</span>
                   <span className="pill dim time">{duration(r.durationSeconds)}</span>
                 </div>
