@@ -13,7 +13,7 @@ services:
     # 브라우저 송출(WHIP) http://localhost:8889/<경로>/whip, 시청(WHEP) http://localhost:8889/<경로>/whep
     # 운영과 같은 설정(송출 인증·상태 훅). 훅이 wget 을 쓰므로 ffmpeg 이미지(wget 포함)를 쓴다
     image: bluenviron/mediamtx:latest-ffmpeg
-    volumes: ["./mediamtx.yml:/mediamtx.yml:ro"]
+    volumes: ["./mediamtx.yml:/mediamtx.yml:ro", "./recordings:/recordings"]
     extra_hosts: ["host.docker.internal:host-gateway"]
     ports:
       - "8889:8889"

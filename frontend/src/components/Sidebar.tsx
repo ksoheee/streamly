@@ -38,6 +38,9 @@ export default function Sidebar() {
             {n.label}
           </Link>
         ))}
+        <Link href="/recordings" className={`side-link ${pathname.startsWith("/recordings") ? "active" : ""}`}>
+          다시보기
+        </Link>
       </nav>
       <p className="side-heading">지금 방송 중</p>
       {live.length === 0 ? (

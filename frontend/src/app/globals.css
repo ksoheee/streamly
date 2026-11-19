@@ -674,3 +674,12 @@ textarea:focus {
   width: 100%;
   margin-top: 8px;
 }
+
+/* 다시보기 */
+.narrow-wide {
+  max-width: 960px;
+}
+
+.recordings-row {
+  margin: 12px 0;
+}
