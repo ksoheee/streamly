@@ -141,6 +141,7 @@
 | **Caddy + sslip.io** | **선택** |
 
 - **이유:** 화면 공유와 카메라는 **HTTPS에서만** 동작합니다. sslip.io는 `1-2-3-4.sslip.io`가 IP `1.2.3.4`를 가리키는 무료 DNS라 도메인 없이 IP만으로 주소가 생기고, Caddy는 설정 몇 줄로 인증서를 자동 발급·갱신합니다. 라우팅(`/api`, WHIP/WHEP, 나머지)과 내부 경로 차단도 같은 파일에서 합니다.
+- **운영 주소:** 처음엔 sslip.io(`34-47-103-199.sslip.io`)로 배포했고, 기억하기 쉬운 주소를 위해 무료 DNS인 **DuckDNS**(`streamly-live.duckdns.org`)로 바꿨습니다. `.env`의 `DOMAIN`만 바꾸면 Caddy가 새 인증서를 받습니다. 직접 배포할 때의 기본값은 여전히 sslip.io입니다.
 
 ### 3.10 프론트엔드: Next.js, 브라우저 중심
 
