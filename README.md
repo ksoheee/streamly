@@ -96,6 +96,15 @@ MediaMTX ──송출 인증·상태 이벤트──▶ app /internal/* (외부 
 
 ### 배포 (서버)
 
+Ubuntu 24.04 서버에서 한 번에 세팅하고 배포하기 (방화벽 개방, Docker 설치, 코드 받기, `.env` 생성, 실행):
+
+```bash
+curl -fsSLO https://raw.githubusercontent.com/ksoheee/streamly/main/deploy/setup-server.sh
+PUBLIC_IP=1.2.3.4 POSTGRES_PASSWORD=change-me DEMO_PASSWORD=change-me bash setup-server.sh
+```
+
+직접 하려면:
+
 ```bash
 git clone https://github.com/ksoheee/streamly.git
 cd streamly/deploy
