@@ -489,6 +489,8 @@ export interface components {
             sizeBytes?: number;
             /** Format: date-time */
             createdAt?: string;
+            /** Format: date-time */
+            thumbnailUpdatedAt?: string;
         };
         DonationSummary: {
             /** Format: int64 */
@@ -496,9 +498,9 @@ export interface components {
             donations?: components["schemas"]["DonationResponse"][];
         };
         CsrfToken: {
-            headerName?: string;
-            token?: string;
             parameterName?: string;
+            token?: string;
+            headerName?: string;
         };
     };
     responses: never;

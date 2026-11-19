@@ -40,7 +40,8 @@ public class RecordingController {
       String ownerName,
       double durationSeconds,
       long sizeBytes,
-      Instant createdAt) {
+      Instant createdAt,
+      Instant thumbnailUpdatedAt) {
     static RecordingResponse from(Recording r) {
       var b = r.getBroadcast();
       return new RecordingResponse(
@@ -51,7 +52,8 @@ public class RecordingController {
           b.getOwner().getUsername(),
           r.getDurationSeconds(),
           r.getSizeBytes(),
-          r.getCreatedAt());
+          r.getCreatedAt(),
+          b.getThumbnailUpdatedAt());
     }
   }
 
