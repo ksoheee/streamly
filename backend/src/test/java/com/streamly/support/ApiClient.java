@@ -34,6 +34,14 @@ public class ApiClient {
     }
   }
 
+  public CookieManager cookies() {
+    return cookies;
+  }
+
+  public HttpClient http() {
+    return http;
+  }
+
   public Response get(String path) {
     return send("GET", path, null);
   }

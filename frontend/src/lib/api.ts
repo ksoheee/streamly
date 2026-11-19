@@ -33,12 +33,13 @@ export async function api<T>(method: string, path: string, body?: unknown): Prom
     await ensureCsrf();
     headers["X-XSRF-TOKEN"] = decodeURIComponent(csrfToken() ?? "");
   }
-  if (body !== undefined) headers["Content-Type"] = "application/json";
+  const raw = body instanceof Blob;
+  if (body !== undefined) headers["Content-Type"] = raw ? body.type : "application/json";
   const res = await fetch(path, {
     method,
     headers,
     credentials: "same-origin",
-    body: body === undefined ? undefined : JSON.stringify(body),
+    body: body === undefined ? undefined : raw ? body : JSON.stringify(body),
   });
   if (!res.ok) {
     let detail = `요청 실패 (${res.status})`;

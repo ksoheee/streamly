@@ -53,6 +53,8 @@ export default function StudioPage() {
     sessionRef.current = null;
     videoSenderRef.current = null;
     await closeSession(s);
+    if (thumbTimerRef.current) clearInterval(thumbTimerRef.current);
+    thumbTimerRef.current = null;
     tracksRef.current.forEach((t) => t.stop());
     tracksRef.current = [];
     await audioCtxRef.current?.close().catch(() => {});
@@ -60,6 +62,27 @@ export default function StudioPage() {
     if (previewRef.current) previewRef.current.srcObject = null;
     setLive(false);
   }, []);
+
+  // 송출 화면을 30초마다 작은 JPEG로 캡처해 목록 썸네일로 올린다. 실패해도 방송에는 영향 없다.
+  const thumbTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  function startThumbnails() {
+    const capture = () => {
+      const v = previewRef.current;
+      if (!v || !v.videoWidth) return;
+      const c = document.createElement("canvas");
+      c.width = 480;
+      c.height = Math.round((480 * v.videoHeight) / v.videoWidth);
+      c.getContext("2d")?.drawImage(v, 0, 0, c.width, c.height);
+      c.toBlob(
+        (blob) => blob && api("PUT", `/api/broadcasts/${id}/thumbnail`, blob).catch(() => {}),
+        "image/jpeg",
+        0.7,
+      );
+    };
+    if (thumbTimerRef.current) clearInterval(thumbTimerRef.current);
+    setTimeout(capture, 3000);
+    thumbTimerRef.current = setInterval(capture, 30000);
+  }
 
   // 방송 종료: 송출 연결을 끊고 서버에 종료를 알린다. 종료된 방송은 다시 송출할 수 없다.
   const end = useCallback(async () => {
@@ -142,6 +165,7 @@ export default function StudioPage() {
         if (s.pc.connectionState === "failed") setNotice("송출 연결이 끊겼습니다. 30초 안에 다시 시작하면 방송이 이어집니다.");
       };
       setLive(true);
+      startThumbnails();
     } catch (e) {
       const err = e as Error;
       setError(err.name === "NotAllowedError" ? "화면 공유/카메라/마이크 권한이 거부되었습니다." : err.message);
