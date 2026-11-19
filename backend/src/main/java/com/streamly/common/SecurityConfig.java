@@ -40,7 +40,8 @@ public class SecurityConfig {
                         HttpMethod.GET,
                         "/api/broadcasts",
                         "/api/broadcasts/*",
-                        "/api/broadcasts/*/chats")
+                        "/api/broadcasts/*/chats",
+                        "/api/broadcasts/*/comments")
                     .permitAll()
                     .requestMatchers(
                         "/api/auth/csrf",
