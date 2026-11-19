@@ -114,7 +114,9 @@ export default function StudioPage() {
     const video = display.getVideoTracks()[0];
     // 브라우저의 '공유 중지'를 누르면 방송도 끝낸다
     video.onended = () => void end();
-    return new MediaStream([keepFramesFlowing(video), dest.stream.getAudioTracks()[0]]);
+    // [DEBUG-raw] ?raw 로 열면 프레임 반복 없이 원래 화면 트랙을 그대로 보낸다 (원인 분리용)
+    const raw = new URLSearchParams(location.search).has("raw");
+    return new MediaStream([raw ? video : keepFramesFlowing(video), dest.stream.getAudioTracks()[0]]);
   }
 
   async function captureForMobile(): Promise<MediaStream> {
@@ -142,6 +144,21 @@ export default function StudioPage() {
         if (s.pc.connectionState === "failed") setNotice("송출 연결이 끊겼습니다. 30초 안에 다시 시작하면 방송이 이어집니다.");
       };
       setLive(true);
+      // [DEBUG-stats] ?debug 로 열면 송출 통계를 화면에 보여준다
+      if (new URLSearchParams(location.search).has("debug")) {
+        const t = setInterval(async () => {
+          if (s.pc.connectionState === "closed") return clearInterval(t);
+          const parts: string[] = [];
+          (await s.pc.getStats()).forEach((r) => {
+            if (r.type === "outbound-rtp" && r.kind === "video")
+              parts.push(`enc=${r.framesEncoded} key=${r.keyFramesEncoded} pkts=${r.packetsSent} ${r.frameWidth}x${r.frameHeight} pli=${r.pliCount} q=${r.qualityLimitationReason}`);
+            if (r.type === "codec" && r.mimeType?.startsWith("video")) parts.push(r.mimeType + " " + (r.sdpFmtpLine ?? ""));
+          });
+          const tr = s.videoSender?.track;
+          parts.push(`track=${tr?.readyState} ${tr?.constructor?.name}`);
+          setNotice("[DEBUG] " + parts.join(" | "));
+        }, 2000);
+      }
     } catch (e) {
       const err = e as Error;
       setError(err.name === "NotAllowedError" ? "화면 공유/카메라/마이크 권한이 거부되었습니다." : err.message);
