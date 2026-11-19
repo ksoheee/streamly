@@ -2,6 +2,8 @@ package com.streamly.media;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.streamly.common.StreamlyProperties;
+import java.util.HashMap;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -51,6 +53,20 @@ public class MediaMtxClient implements MediaServerClient {
       return path(streamPath).path("ready").asBoolean(false);
     } catch (HttpClientErrorException.NotFound e) {
       return false;
+    }
+  }
+
+  @Override
+  public Map<String, Integer> viewerCounts() {
+    try {
+      JsonNode items =
+          http.get().uri("/v3/paths/list").retrieve().body(JsonNode.class).path("items");
+      Map<String, Integer> counts = new HashMap<>();
+      items.forEach(p -> counts.put(p.path("name").asText(), p.path("readers").size()));
+      return counts;
+    } catch (RestClientException e) {
+      log.warn("MediaMTX 시청자 수 조회 실패: {}", e.getMessage());
+      return Map.of();
     }
   }
 

@@ -7,6 +7,7 @@ import com.streamly.broadcast.BroadcastDtos.PublishTokenResponse;
 import com.streamly.media.MediaServerClient;
 import com.streamly.media.PublishTokens;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -37,13 +38,26 @@ public class BroadcastService {
   }
 
   @Transactional(readOnly = true)
-  public List<BroadcastResponse> list(BroadcastStatus status) {
-    return broadcasts.findAllForList(status).stream().map(BroadcastResponse::from).toList();
+  public List<BroadcastResponse> list(BroadcastStatus status, String query) {
+    String q = query == null || query.isBlank() ? null : "%" + query.strip().toLowerCase() + "%";
+    List<Broadcast> found = broadcasts.findAllForList(status, q);
+    Map<String, Integer> viewers = viewersIfAnyLive(found);
+    return found.stream()
+        .map(b -> BroadcastResponse.from(b, viewers.getOrDefault(b.getStreamPath(), 0)))
+        .toList();
   }
 
   @Transactional(readOnly = true)
   public BroadcastResponse get(Long id) {
-    return BroadcastResponse.from(find(id));
+    Broadcast b = find(id);
+    return BroadcastResponse.from(
+        b, viewersIfAnyLive(List.of(b)).getOrDefault(b.getStreamPath(), 0));
+  }
+
+  private Map<String, Integer> viewersIfAnyLive(List<Broadcast> list) {
+    return list.stream().anyMatch(b -> b.getStatus() == BroadcastStatus.LIVE)
+        ? mediaServer.viewerCounts()
+        : Map.of();
   }
 
   public BroadcastResponse create(Long userId, BroadcastRequest req) {

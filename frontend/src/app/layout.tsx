@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth";
 import Header from "@/components/Header";
+import Sidebar from "@/components/Sidebar";
 
 export const metadata: Metadata = {
   title: "Streamly",
@@ -15,8 +17,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ko">
       <body>
         <AuthProvider>
-          <Header />
-          <main className="container">{children}</main>
+          <Suspense>
+            <Header />
+            <div className="shell">
+              <Sidebar />
+              <main className="container">{children}</main>
+            </div>
+          </Suspense>
         </AuthProvider>
       </body>
     </html>

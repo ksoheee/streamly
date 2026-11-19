@@ -21,9 +21,14 @@ public final class BroadcastDtos {
       String streamPath,
       Instant createdAt,
       Instant startedAt,
-      Instant endedAt) {
+      Instant endedAt,
+      int viewerCount) {
 
     static BroadcastResponse from(Broadcast b) {
+      return from(b, 0);
+    }
+
+    static BroadcastResponse from(Broadcast b, int viewerCount) {
       return new BroadcastResponse(
           b.getId(),
           b.getTitle(),
@@ -35,7 +40,8 @@ public final class BroadcastDtos {
           b.getStreamPath(),
           b.getCreatedAt(),
           b.getStartedAt(),
-          b.getEndedAt());
+          b.getEndedAt(),
+          b.getStatus() == BroadcastStatus.LIVE ? viewerCount : 0);
     }
   }
 

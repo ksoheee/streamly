@@ -36,7 +36,11 @@ public class SecurityConfig {
         .securityContext(c -> c.securityContextRepository(securityContextRepository()))
         .authorizeHttpRequests(
             auth ->
-                auth.requestMatchers(HttpMethod.GET, "/api/broadcasts", "/api/broadcasts/*")
+                auth.requestMatchers(
+                        HttpMethod.GET,
+                        "/api/broadcasts",
+                        "/api/broadcasts/*",
+                        "/api/broadcasts/*/chats")
                     .permitAll()
                     .requestMatchers(
                         "/api/auth/csrf",

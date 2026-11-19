@@ -100,6 +100,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/broadcasts/{broadcastId}/chats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_1"];
+        put?: never;
+        post: operations["send"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/signup": {
         parameters: {
             query?: never;
@@ -206,10 +222,8 @@ export interface components {
             startedAt?: string;
             /** Format: date-time */
             endedAt?: string;
-        };
-        EventRequest: {
-            type?: string;
-            path?: string;
+            /** Format: int32 */
+            viewerCount?: number;
         };
         AuthRequest: {
             user?: string;
@@ -227,6 +241,17 @@ export interface components {
             streamPath?: string;
             /** Format: date-time */
             expiresAt?: string;
+        };
+        ChatRequest: {
+            content: string;
+        };
+        ChatResponse: {
+            /** Format: int64 */
+            id?: number;
+            username?: string;
+            content?: string;
+            /** Format: date-time */
+            createdAt?: string;
         };
         SignupRequest: {
             username: string;
@@ -328,16 +353,15 @@ export interface operations {
     };
     event: {
         parameters: {
-            query?: never;
+            query: {
+                type: string;
+                path: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["EventRequest"];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description OK */
             200: {
@@ -374,6 +398,7 @@ export interface operations {
         parameters: {
             query?: {
                 status?: "READY" | "LIVE" | "ENDED";
+                q?: string;
             };
             header?: never;
             path?: never;
@@ -456,6 +481,56 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["BroadcastResponse"];
+                };
+            };
+        };
+    };
+    list_1: {
+        parameters: {
+            query?: {
+                after?: number;
+            };
+            header?: never;
+            path: {
+                broadcastId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ChatResponse"][];
+                };
+            };
+        };
+    };
+    send: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                broadcastId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ChatResponse"];
                 };
             };
         };
