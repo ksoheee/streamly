@@ -1,8 +1,10 @@
 package com.streamly.support;
 
+import com.streamly.media.MediaServerClient;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -14,5 +16,11 @@ public class TestcontainersConfiguration {
   @ServiceConnection
   PostgreSQLContainer<?> postgresContainer() {
     return new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"));
+  }
+
+  @Bean
+  @Primary
+  MediaServerClient fakeMediaServerClient() {
+    return new FakeMediaServerClient();
   }
 }

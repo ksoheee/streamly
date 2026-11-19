@@ -7,8 +7,26 @@ spring:
     password: ${DB_PASSWORD:streamly}
   jpa:
     hibernate:
-      ddl-auto: ${JPA_DDL_AUTO:update}
+      ddl-auto: validate
     open-in-view: false
+  mvc:
+    problemdetails:
+      enabled: true
+
+server:
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        same-site: lax
+        # 운영(HTTPS)에서는 COOKIE_SECURE=true
+        secure: ${COOKIE_SECURE:false}
+
+streamly:
+  demo-password: ${DEMO_PASSWORD:}
+  publish-token-ttl: 10m
+  reconnect-grace: 30s
+  mediamtx-api-url: ${MEDIAMTX_API_URL:http://localhost:9997}
 
 management:
   endpoints:
