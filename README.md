@@ -17,7 +17,8 @@
 
 ## 시연 영상
 
-- **TODO** (PC·모바일 송출 → 다른 기기에서 시청 → 종료)
+- 모바일: https://youtu.be/-JWdIE9eQ5U?si=zPGaxQR8hOs5jEjx
+- 웹: https://youtu.be/zR-cfVMOX7g
 
 ## 기능 확인 방법
 
